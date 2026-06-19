@@ -1,110 +1,135 @@
-# WEBTE2 Zadanie 4 - Kam na dovolenku?
+# Vacation Recommender
 
-Laravel aplikácia, ktorá odporúča dovolenkové destinácie podľa termínu, dĺžky pobytu, typu dovolenky, teploty a vzdialenosti letu z Viedne.
+A Laravel web application that recommends vacation destinations based on travel dates, trip length, vacation style, preferred temperature, and flight distance from Vienna.
 
-## Použité technológie
+The application ranks destinations by how well they match the selected preferences and provides useful context for each recommendation, including climate data, current weather, country information, currency exchange rates, and the nearest airport.
 
-- PHP 8.5
-- Laravel 13
-- MySQL/MariaDB
-- Blade, CSS, JavaScript
-- Chart.js na grafy
-- Lucide icons na ikony
+## Features
 
-## Použité externé API
+- Search destinations by month or custom date range.
+- Filter by trip length, vacation type, preferred temperature, and flight distance.
+- Rank results by preference match.
+- Show an explanation for each recommended destination.
+- Display destination details, including:
+  - average monthly temperature,
+  - minimum and maximum temperatures,
+  - current weather forecast when available,
+  - nearest airport,
+  - country flag, country name, and capital city,
+  - currency and exchange rate against EUR,
+  - generated travel recommendation.
+- Compare two destinations side by side.
+- Track application statistics:
+  - total and unique visits in the last 60 minutes,
+  - traffic by time of day,
+  - searchable destination statistics table,
+  - visitor preference charts.
+
+The application does not store raw IP addresses. Unique visits are calculated using an HMAC hash with the Laravel `APP_KEY`.
+
+## Tech Stack
+
+- PHP
+- Laravel
+- MySQL or MariaDB
+- Blade
+- CSS
+- JavaScript
+- Chart.js
+- Lucide icons
+
+## External APIs
 
 - GeoNames flags: `https://www.geonames.org/flags/x/{iso}.gif`
-  - zobrazenie vlajky krajiny podľa dvojpísmenového ISO kódu.
+  - Displays country flags by two-letter ISO code.
 - Frankfurter API: `https://api.frankfurter.app/latest`
-  - aktuálny kurz cudzej meny voči euru.
+  - Provides current exchange rates against EUR.
 - Open-Meteo Forecast API: `https://api.open-meteo.com/v1/forecast`
-  - aktuálna predpoveď počasia pre súradnice destinácie.
+  - Provides current weather forecasts for destination coordinates.
 
-## Funkcie podľa zadania
+## Database
 
-- Vyhľadávací formulár:
-  - mesiac alebo dátumový rozsah,
-  - počet dní,
-  - typ dovolenky,
-  - preferovaná teplota,
-  - vzdialenosť letu z Viedne.
-- Výsledky zoradené podľa zhody s preferenciami.
-- Pri každej destinácii je vysvetlené, prečo bola odporúčaná.
-- Detail destinácie:
-  - priemerná mesačná teplota, minimum, maximum,
-  - aktuálna predpoveď, ak je dostupná,
-  - najbližšie letisko,
-  - vlajka, krajina a hlavné mesto,
-  - mena a kurz voči euru,
-  - automaticky generované odporúčanie.
-- Porovnanie dvoch destinácií.
-- Štatistiky:
-  - celkové a unikátne návštevy za posledných 60 minút,
-  - návštevnosť podľa dennej doby,
-  - tabuľka vyhľadávaných destinácií so sortable stĺpcami,
-  - graf preferencií návštevníkov.
+The application uses the following main tables:
 
-IP adresa sa do databázy neukladá. Pre unikátne návštevy sa používa HMAC hash IP adresy s Laravel `APP_KEY`.
+- `destinations` - destination data, vacation types, currency, location, and flight distance.
+- `climates` - average monthly minimum and maximum temperatures.
+- `countries` - country names, ISO codes, and capital cities.
+- `airports` - airport data used to find the nearest airport.
+- `visits` - visit records without storing raw IP addresses.
+- `search_logs` - search result logs used for statistics.
 
-## Databázový model
-
-- `destinations` - destinácie, typy dovolenky, mena, poloha, letová vzdialenosť.
-- `climates` - priemerné mesačné minimá a maximá.
-- `countries` - štát, ISO kód a hlavné mesto.
-- `airports` - letiská pre výpočet najbližšieho letiska.
-- `visits` - návštevy portálu bez uloženia IP adresy.
-- `search_logs` - uložené výsledky vyhľadávania pre štatistiky.
-
-Model je definovaný aj v Laravel migrácii:
+The database schema is available in the Laravel migration:
 
 ```bash
 database/migrations/2026_05_04_000001_create_vacation_tables.php
 ```
 
-SQL dump je v súbore:
+An SQL dump is also included:
 
 ```bash
 database/dump.sql
 ```
 
-## Nasadenie
+## Installation
 
-1. Nahrajte priečinok `dovolenka` na server.
-2. Nastavte document root na `dovolenka/public`.
-3. Upravte `.env`:
-
-```env
-APP_URL=https://node21.webte.fei.stuba.sk/dovolenka/public
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=webte2_1
-DB_USERNAME=xadamenkom
-DB_PASSWORD=...
-```
-
-4. Nainštalujte závislosti:
+Clone the repository and install PHP dependencies:
 
 ```bash
-composer install --no-dev
+composer install
+```
+
+Create the environment file and generate the application key:
+
+```bash
+cp .env.example .env
 php artisan key:generate
 ```
 
-5. Importujte databázu:
+Configure your database connection in `.env`:
 
-```bash
-mysql -u xadamenkom -p webte2_1 < database/dump.sql
+```env
+APP_URL=http://localhost
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=vacation_recommender
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
-Alternatívne:
+Run migrations and seed the database:
 
 ```bash
 php artisan migrate:fresh --seed
 ```
 
-## Požiadavky servera
+Alternatively, import the included SQL dump:
 
-Pre čistú Laravel inštaláciu sú potrebné najmä PHP rozšírenia:
+```bash
+mysql -u root -p vacation_recommender < database/dump.sql
+```
+
+Install frontend dependencies and build assets:
+
+```bash
+npm install
+npm run build
+```
+
+Start the local development server:
+
+```bash
+php artisan serve
+```
+
+## Server Requirements
+
+- PHP with the required Laravel extensions
+- MySQL or MariaDB
+- Composer
+- Node.js and npm
+
+Commonly required PHP extensions include:
 
 - `pdo_mysql`
 - `mbstring`
@@ -113,14 +138,3 @@ Pre čistú Laravel inštaláciu sú potrebné najmä PHP rozšírenia:
 - `xmlwriter`
 - `curl`
 - `zip`
-
-Na aktuálnom VPS chýbajú niektoré rozšírenia, preto je v projekte malý polyfill pre `mb_split()`. Na štandardnom Laravel prostredí nie je potrebný.
-
-## Odovzdanie
-
-Do ZIP archívu nepatria adresáre:
-
-- `vendor`
-- `node_modules`
-
-Odovzdávajú sa zdrojové súbory, `composer.json`, `composer.lock`, `package.json`, SQL dump, README a Nginx konfigurácia `nginx.conf`.
